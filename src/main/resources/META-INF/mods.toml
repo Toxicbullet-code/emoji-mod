@@ -7,10 +7,10 @@ issueTrackerURL="https://github.com/Toxicbullet-code/emoji-mod/issues"
 modId="emoji"
 version="1.0.0"
 displayName="Emoji Mod"
-credits="Created by Khalil Abu Khaled"
-authors="Khalil Abu Khaled"
+credits="Created by toxic_bullet"
+authors="toxic_bullet"
 description='''
-A lightweight client-side Minecraft Forge mod that brings Discord-style inline emoji autocomplete and custom RGBA rendering to chat.
+A lightweight client-side Minecraft Forge mod that brings Discord-style inline chat autocomplete and custom RGBA rendering to chat.
 '''
 
 [[dependencies.emoji]]
