@@ -1,23 +1,28 @@
 modLoader="javafml"
 loaderVersion="[47,)"
 license="MIT"
+issueTrackerURL="https://github.com/Toxicbullet-code/emoji-mod/issues"
 
 [[mods]]
 modId="emoji"
 version="1.0.0"
-displayName="Emoji"
-description="Colon chat completion and custom RGBA color emojis."
+displayName="Emoji Mod"
+credits="Created by Khalil Abu Khaled"
+authors="Khalil Abu Khaled"
+description='''
+A lightweight client-side Minecraft Forge mod that brings Discord-style inline emoji autocomplete and custom RGBA rendering to chat.
+'''
 
 [[dependencies.emoji]]
     modId="forge"
     mandatory=true
     versionRange="[47,)"
     ordering="NONE"
-    side="BOTH"
+    side="CLIENT"
 
 [[dependencies.emoji]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.20.1]"
+    versionRange="[1.20.1,1.21)"
     ordering="NONE"
-    side="BOTH"
+    side="CLIENT"
