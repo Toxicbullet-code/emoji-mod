@@ -30,6 +30,9 @@ minecraft {
             // Force JVM to prefer IPv4 over IPv6 on Linux
             property 'java.net.preferIPv4Stack', 'true'
 
+            // Fix NVIDIA driver segfault in libnvidia-glcore on Wayland/Linux
+            environment 'GLFW_PLATFORM', 'x11'
+
             mods {
                 "${mod_id}" {
                     source sourceSets.main
