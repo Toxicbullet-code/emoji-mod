@@ -2,12 +2,122 @@
   "providers": [
     {
       "type": "bitmap",
-      "file": "emoji:font/emojis.png",
-      "ascent": 7,
-      "height": 8,
-      "chars": [
-        "\uE000\uE001\uE002\uE003\uE004\uE005\uE006\uE007\uE008\uE009"
-      ]
+      "file": "emoji:font/100.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE000"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/clown_face.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE001"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/cry.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE002"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/face_vomiting.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE003"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/heart.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE004"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/heart_eyes.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE005"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/heart_hands.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE006"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/joy.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE007"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/money_mouth_face.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE008"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/money_with_wings.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE009"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/partying_face.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE00A"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/rage.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE00B"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/smiley.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE00C"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/smiling_face_with_3_hearts.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE00D"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/smiling_imp.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE00E"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/sob.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE00F"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/wave.png",
+      "ascent": 10,
+      "height": 10,
+      "chars": ["\uE010"]
     }
   ]
 }

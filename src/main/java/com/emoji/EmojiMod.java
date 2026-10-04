@@ -21,21 +21,27 @@ import java.util.List;
 public class EmojiMod {
 
     public static final String MODID = "emoji";
-    public static final ResourceLocation EMOJI_SHEET = new ResourceLocation(MODID, "textures/font/emojis.png");
 
-    public record EmojiEntry(String code, String character, int index) {}
+    public record EmojiEntry(String code, String character, String fileName) {}
 
     public static final List<EmojiEntry> EMOJIS = List.of(
-            new EmojiEntry("sob", "\uE000", 0),
-            new EmojiEntry("skull", "\uE001", 1),
-            new EmojiEntry("fire", "\uE002", 2),
-            new EmojiEntry("joy", "\uE003", 3),
-            new EmojiEntry("smile", "\uE004", 4),
-            new EmojiEntry("heart", "\uE005", 5),
-            new EmojiEntry("thumbsup", "\uE006", 6),
-            new EmojiEntry("clown", "\uE007", 7),
-            new EmojiEntry("eyes", "\uE008", 8),
-            new EmojiEntry("100", "\uE009", 9)
+            new EmojiEntry("100", "\uE000", "100.png"),
+            new EmojiEntry("clown", "\uE001", "clown_face.png"),
+            new EmojiEntry("cry", "\uE002", "cry.png"),
+            new EmojiEntry("vomit", "\uE003", "face_vomiting.png"),
+            new EmojiEntry("heart", "\uE004", "heart.png"),
+            new EmojiEntry("hearteyes", "\uE005", "heart_eyes.png"),
+            new EmojiEntry("hearthands", "\uE006", "heart_hands.png"),
+            new EmojiEntry("joy", "\uE007", "joy.png"),
+            new EmojiEntry("moneymouth", "\uE008", "money_mouth_face.png"),
+            new EmojiEntry("moneywings", "\uE009", "money_with_wings.png"),
+            new EmojiEntry("party", "\uE00A", "partying_face.png"),
+            new EmojiEntry("angry", "\uE00B", "rage.png"),
+            new EmojiEntry("smile", "\uE00C", "smiley.png"),
+            new EmojiEntry("hearthearts", "\uE00D", "smiling_face_with_3_hearts.png"),
+            new EmojiEntry("imp", "\uE00E", "smiling_imp.png"),
+            new EmojiEntry("sob", "\uE00F", "sob.png"),
+            new EmojiEntry("wave", "\uE010", "wave.png")
     );
 
     private static int selectedIndex = 0;
@@ -84,7 +90,8 @@ public class EmojiMod {
                 graphics.fill(boxX, itemY, boxX + boxW, itemY + itemHeight, 0xFF0055AA);
             }
 
-            graphics.blit(EMOJI_SHEET, boxX + 4, itemY + 2, entry.index() * 16, 0, 10, 10, 160, 16);
+            ResourceLocation individualTexture = new ResourceLocation(MODID, "textures/font/" + entry.fileName());
+            graphics.blit(individualTexture, boxX + 4, itemY + 2, 0, 0, 10, 10, 10, 10);
             graphics.drawString(Minecraft.getInstance().font, ":" + entry.code() + ":", boxX + 18, itemY + 3, i == selectedIndex ? 0xFFFFFF : 0xAAAAAA);
         }
         RenderSystem.disableBlend();

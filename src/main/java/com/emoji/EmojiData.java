@@ -7,20 +7,24 @@ public class EmojiData {
     public static final Map<String, String> EMOJIS = new LinkedHashMap<>();
 
     static {
-        EMOJIS.put(":sob:", "😭");
-        EMOJIS.put(":angry:", "😡");
-        EMOJIS.put(":smile:", "😄");
-        EMOJIS.put(":heart:", "❤️");
-        EMOJIS.put(":fire:", "🔥");
-        EMOJIS.put(":skull:", "💀");
-        EMOJIS.put(":thumbsup:", "👍");
-        EMOJIS.put(":clown:", "🤡");
-        EMOJIS.put(":eyes:", "👀");
-        EMOJIS.put(":100:", "💯");
-        EMOJIS.put(":skull:", "☠️");
-        EMOJIS.put(":star:", "⭐");
-        EMOJIS.put(":check:", "✅");
-        EMOJIS.put(":x:", "❌");
+        EMOJIS.put(":100:", "\uE000");        // 💯
+        EMOJIS.put(":clown:", "\uE001");      // 🤡
+        EMOJIS.put(":cry:", "\uE002");        // 😢
+        EMOJIS.put(":vomit:", "\uE003");      // 🤮
+        EMOJIS.put(":heart:", "\uE004");      // ❤️
+        EMOJIS.put(":hearteyes:", "\uE005");  // 😍
+        EMOJIS.put(":hearthands:", "\uE006"); // 🫶
+        EMOJIS.put(":joy:", "\uE007");        // 😂
+        EMOJIS.put(":moneymouth:", "\uE008"); // 🤑
+        EMOJIS.put(":moneywings:", "\uE009"); // 💸
+        EMOJIS.put(":party:", "\uE00A");      // 🥳
+        EMOJIS.put(":angry:", "\uE00B");      // 😡
+        EMOJIS.put(":smile:", "\uE00C");      // 😄
+        EMOJIS.put(":hearthearts:", "\uE00D");// 🥰
+        EMOJIS.put(":imp:", "\uE00E");        // 😈
+        EMOJIS.put(":sob:", "\uE00F");        // 😭
+        EMOJIS.put(":wave:", "\uE010");       // 👋
+
     }
 
     public static String replaceEmojis(String message) {
