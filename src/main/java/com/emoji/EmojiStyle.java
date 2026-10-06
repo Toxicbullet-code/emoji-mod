@@ -10,35 +10,23 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * Re-styles emoji characters so they render through the dedicated {@code emoji:emoji}
- * font (which uses smooth linear filtering) instead of the vanilla default font
- * (which uses nearest-neighbour filtering and therefore looks pixelated).
- *
- * <p>The transform is idempotent: components that already use the emoji font are
- * returned unchanged, and components without emoji characters are returned with
- * their original identity so callers can cheaply detect "nothing changed".</p>
- */
 public final class EmojiStyle {
 
-    /** The font that renders emoji glyphs with smooth filtering. */
     public static final ResourceLocation EMOJI_FONT = new ResourceLocation(EmojiMod.MODID, "emoji");
+    private static final Pattern SHORTCODE_PATTERN = Pattern.compile(":([a-zA-Z0-9_]+):");
 
-    private EmojiStyle() {
-    }
+    private EmojiStyle() {}
 
-    /**
-     * Applies the emoji font to every emoji character inside the given component tree.
-     *
-     * @param component the component to transform
-     * @return the transformed component, or the exact same instance when nothing changed
-     */
     public static Component apply(Component component) {
         return transform(component);
     }
 
     private static Component transform(Component component) {
+        if (component == null) return null;
+
         ComponentContents contents = component.getContents();
         Style style = component.getStyle();
 
@@ -46,14 +34,13 @@ public final class EmojiStyle {
         List<Component> siblings = new ArrayList<>(component.getSiblings().size());
         for (Component sibling : component.getSiblings()) {
             Component transformed = transform(sibling);
-            siblingsChanged |= transformed != sibling;
+            siblingsChanged |= (transformed != sibling);
             siblings.add(transformed);
         }
 
-        // Plain text containing emoji characters: split it into styled runs.
         if (contents instanceof LiteralContents literal
                 && !EMOJI_FONT.equals(style.getFont())
-                && EmojiData.containsEmoji(literal.text())) {
+                && containsShortcode(literal.text())) {
             MutableComponent wrapper = Component.empty();
             wrapper.setStyle(style);
             appendTextRuns(wrapper, literal.text());
@@ -63,7 +50,7 @@ public final class EmojiStyle {
             return wrapper;
         }
 
-        // Translations: emoji characters may live inside the translation arguments.
+        ComponentContents newContents = contents;
         if (contents instanceof TranslatableContents translatable) {
             Object[] args = translatable.getArgs();
             Object[] transformedArgs = null;
@@ -77,19 +64,28 @@ public final class EmojiStyle {
                         }
                         transformedArgs[i] = transformed;
                     }
+                } else if (args[i] instanceof String str) {
+                    if (containsShortcode(str)) {
+                        MutableComponent argWrapper = Component.empty();
+                        appendTextRuns(argWrapper, str);
+                        if (transformedArgs == null) {
+                            transformedArgs = args.clone();
+                        }
+                        transformedArgs[i] = argWrapper;
+                    }
                 }
             }
 
             if (transformedArgs != null) {
-                contents = new TranslatableContents(translatable.getKey(), translatable.getFallback(), transformedArgs);
+                newContents = new TranslatableContents(translatable.getKey(), translatable.getFallback(), transformedArgs);
             }
         }
 
-        if (!siblingsChanged && contents == component.getContents()) {
+        if (!siblingsChanged && newContents == contents) {
             return component;
         }
 
-        MutableComponent rebuilt = MutableComponent.create(contents);
+        MutableComponent rebuilt = MutableComponent.create(newContents);
         rebuilt.setStyle(style);
         for (Component sibling : siblings) {
             rebuilt.append(sibling);
@@ -97,41 +93,38 @@ public final class EmojiStyle {
         return rebuilt;
     }
 
-    /**
-     * Splits plain text into runs of regular text and runs of emoji characters,
-     * appending each run to the target. Emoji runs are styled with the emoji font.
-     */
-    private static void appendTextRuns(MutableComponent target, String text) {
-        StringBuilder run = new StringBuilder();
-        boolean emojiRun = false;
-
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            boolean isEmoji = EmojiData.isEmojiChar(c);
-
-            if (run.length() > 0 && isEmoji != emojiRun) {
-                flushRun(target, run, emojiRun);
+    private static boolean containsShortcode(String text) {
+        Matcher matcher = SHORTCODE_PATTERN.matcher(text);
+        while (matcher.find()) {
+            if (EmojiData.getByName(matcher.group(1)) != null) {
+                return true;
             }
-
-            emojiRun = isEmoji;
-            run.append(c);
         }
-
-        flushRun(target, run, emojiRun);
+        return false;
     }
 
-    private static void flushRun(MutableComponent target, StringBuilder run, boolean emojiRun) {
-        if (run.length() == 0) {
-            return;
+    private static void appendTextRuns(MutableComponent target, String text) {
+        Matcher matcher = SHORTCODE_PATTERN.matcher(text);
+        int lastPos = 0;
+
+        while (matcher.find()) {
+            String shortcode = matcher.group(1);
+            EmojiData.EmojiEntry entry = EmojiData.getByName(shortcode);
+
+            if (entry != null) {
+                if (matcher.start() > lastPos) {
+                    target.append(Component.literal(text.substring(lastPos, matcher.start())));
+                }
+
+                target.append(Component.literal(entry.codepoint())
+                        .withStyle(Style.EMPTY.withFont(EMOJI_FONT)));
+
+                lastPos = matcher.end();
+            }
         }
 
-        String value = run.toString();
-        run.setLength(0);
-
-        if (emojiRun) {
-            target.append(Component.literal(value).withStyle(Style.EMPTY.withFont(EMOJI_FONT)));
-        } else {
-            target.append(Component.literal(value));
+        if (lastPos < text.length()) {
+            target.append(Component.literal(text.substring(lastPos)));
         }
     }
 }

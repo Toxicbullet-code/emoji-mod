@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -24,10 +25,31 @@ public class EmojiMod {
     private static final List<EmojiData.EmojiEntry> currentMatches = new ArrayList<>();
     private static int boxX, boxY, boxW, boxH;
 
-    // Emoji picker panel, shown on the right side of the chat screen.
-    private static final int PICKER_WIDTH = 104;
-    private static final int PICKER_ITEM_HEIGHT = 14;
-    private static int pickerX, pickerY, pickerH;
+    // Autocomplete suggestion box drawn above the chat input
+    private static final int SUGGESTION_HEIGHT = 16;
+    private static final int SUGGESTION_ICON = 14;
+
+    // Emoji toggle button, drawn at the right end just above the chat input
+    private static final int BUTTON_SIZE = 18;
+    private static final int BUTTON_ICON = 16;
+
+    // Emoji tab that opens above the button while active
+    private static final int CELL = 22;
+    private static final int CELL_ICON = 20;
+    private static final int PANEL_COLUMNS = 5;
+    private static final int PANEL_PADDING = 4;
+    private static final int PANEL_TITLE_HEIGHT = 14;
+
+    private static boolean panelOpen = false;
+    private static int buttonX, buttonY;
+    private static int panelX, panelY, panelW, panelH;
+
+    @SubscribeEvent
+    public static void onScreenInit(ScreenEvent.Init.Post event) {
+        panelOpen = false;
+        currentMatches.clear();
+        selectedIndex = 0;
+    }
 
     @SubscribeEvent
     public static void onScreenRender(ScreenEvent.Render.Post event) {
@@ -36,18 +58,41 @@ public class EmojiMod {
         EditBox editBox = getEditBox(chatScreen);
         if (editBox == null) return;
 
+        GuiGraphics graphics = event.getGuiGraphics();
+
         updateMatches(editBox);
+        updateLayout(chatScreen, editBox);
 
-        drawEmojiPicker(event.getGuiGraphics(), chatScreen, editBox, event.getMouseX(), event.getMouseY());
+        if (panelOpen) {
+            drawPanel(graphics, event.getMouseX(), event.getMouseY());
+        }
+        drawButton(graphics, event.getMouseX(), event.getMouseY());
+        if (!currentMatches.isEmpty()) {
+            drawSuggestions(graphics, editBox, event.getMouseX(), event.getMouseY());
+        }
+    }
 
-        if (currentMatches.isEmpty()) return;
+    /** Computes where the toggle button and the emoji tab sit on this screen. */
+    private static void updateLayout(ChatScreen screen, EditBox editBox) {
+        buttonX = screen.width - BUTTON_SIZE - 4;
+        buttonY = editBox.getY() - BUTTON_SIZE - 2;
 
+        int rows = (EmojiData.EMOJIS.size() + PANEL_COLUMNS - 1) / PANEL_COLUMNS;
+        panelW = PANEL_PADDING * 2 + PANEL_COLUMNS * CELL;
+        panelH = PANEL_TITLE_HEIGHT + PANEL_PADDING * 2 + rows * CELL;
+        panelX = screen.width - panelW - 4;
+        panelY = buttonY - panelH - 2;
+
+        if (panelX < 4) panelX = 4;
+        if (panelY < 4) panelY = 4;
+    }
+
+    /** Draws the ":" autocomplete suggestions above the chat input. */
+    private static void drawSuggestions(GuiGraphics graphics, EditBox editBox, double mouseX, double mouseY) {
         if (selectedIndex >= currentMatches.size()) selectedIndex = 0;
 
-        GuiGraphics graphics = event.getGuiGraphics();
-        int itemHeight = 14;
-        boxW = 140;
-        boxH = currentMatches.size() * itemHeight + 4;
+        boxW = 150;
+        boxH = currentMatches.size() * SUGGESTION_HEIGHT + 4;
         boxX = editBox.getX() + 2;
         boxY = editBox.getY() - boxH - 4;
 
@@ -57,15 +102,17 @@ public class EmojiMod {
 
         for (int i = 0; i < currentMatches.size(); i++) {
             EmojiData.EmojiEntry entry = currentMatches.get(i);
-            int itemY = boxY + 2 + (i * itemHeight);
+            int itemY = boxY + 2 + (i * SUGGESTION_HEIGHT);
 
             if (i == selectedIndex) {
-                graphics.fill(boxX, itemY, boxX + boxW, itemY + itemHeight, 0xFF0055AA);
+                graphics.fill(boxX, itemY, boxX + boxW, itemY + SUGGESTION_HEIGHT, 0xFF0055AA);
             }
 
-            graphics.blit(entry.texture(), boxX + 4, itemY + 2, 0, 0, 10, 10, 10, 10);
-            graphics.drawString(Minecraft.getInstance().font, ":" + entry.code() + ":", boxX + 18, itemY + 3, i == selectedIndex ? 0xFFFFFF : 0xAAAAAA);
+            drawEmoji(graphics, entry.texture(), boxX + 3, itemY + 1, SUGGESTION_ICON);
+            graphics.drawString(Minecraft.getInstance().font, ":" + entry.name() + ":",
+                    boxX + 21, itemY + 4, i == selectedIndex ? 0xFFFFFF : 0xAAAAAA);
         }
+
         RenderSystem.disableBlend();
     }
 
@@ -102,9 +149,9 @@ public class EmojiMod {
         double mx = event.getMouseX();
         double my = event.getMouseY();
 
-        // Autocomplete popup has priority when the click lands inside it.
-        if (!currentMatches.isEmpty() && mx >= boxX && mx <= boxX + boxW && my >= boxY && my <= boxY + boxH) {
-            int clickedIdx = (int) ((my - boxY - 2) / 14);
+        // Autocomplete popup priority
+        if (!currentMatches.isEmpty() && inRect(mx, my, boxX, boxY, boxW, boxH)) {
+            int clickedIdx = (int) ((my - boxY - 2) / SUGGESTION_HEIGHT);
             if (clickedIdx >= 0 && clickedIdx < currentMatches.size()) {
                 selectedIndex = clickedIdx;
                 applySelection(editBox);
@@ -113,62 +160,106 @@ public class EmojiMod {
             return;
         }
 
-        int pickerIdx = pickerCellAt(mx, my);
-        if (pickerIdx >= 0) {
-            insertShortcode(editBox, EmojiData.EMOJIS.get(pickerIdx));
+        // Toggle button logic
+        if (inRect(mx, my, buttonX, buttonY, BUTTON_SIZE, BUTTON_SIZE)) {
+            panelOpen = !panelOpen;
             event.setCanceled(true);
+            return;
+        }
+
+        if (panelOpen) {
+            int index = panelCellAt(mx, my);
+            if (index >= 0) {
+                event.setCanceled(true);
+                insertShortcode(editBox, EmojiData.EMOJIS.get(index));
+                return;
+            }
+
+            if (inRect(mx, my, panelX, panelY, panelW, panelH)) {
+                event.setCanceled(true);
+                return;
+            }
+
+            panelOpen = false;
         }
     }
 
-    /**
-     * Draws a small emoji picker on the right side of the chat screen while the
-     * chat input is open. Clicking an entry inserts its shortcode into the input.
-     */
-    private static void drawEmojiPicker(GuiGraphics graphics, ChatScreen screen, EditBox editBox, double mouseX, double mouseY) {
-        int panelH = EmojiData.EMOJIS.size() * PICKER_ITEM_HEIGHT + 4;
-        int x = screen.width - PICKER_WIDTH - 4;
-        int y = Math.max(4, editBox.getY() - panelH - 4);
+    /** Draws the emoji toggle button sitting just above the chat input. */
+    private static void drawButton(GuiGraphics graphics, double mouseX, double mouseY) {
+        boolean hover = inRect(mouseX, mouseY, buttonX, buttonY, BUTTON_SIZE, BUTTON_SIZE);
 
-        pickerX = x;
-        pickerY = y;
-        pickerH = panelH;
+        graphics.fill(buttonX - 1, buttonY - 1, buttonX + BUTTON_SIZE + 1, buttonY + BUTTON_SIZE + 1, 0xD0000000);
 
-        int hovered = pickerCellAt(mouseX, mouseY);
+        int background = panelOpen ? 0xFF0055AA : (hover ? 0xF03868A8 : 0xC0181818);
+        graphics.fill(buttonX, buttonY, buttonX + BUTTON_SIZE, buttonY + BUTTON_SIZE, background);
 
-        graphics.fill(x - 1, y - 1, x + PICKER_WIDTH + 1, y + panelH + 1, 0xD0000000);
+        int iconOffset = (BUTTON_SIZE - BUTTON_ICON) / 2;
+        EmojiData.EmojiEntry defaultIcon = EmojiData.getByName("smiley");
+        if (defaultIcon != null) {
+            drawEmoji(graphics, defaultIcon.texture(), buttonX + iconOffset, buttonY + iconOffset, BUTTON_ICON);
+        }
+    }
+
+    /** Draws the emoji grid panel above the toggle button. */
+    private static void drawPanel(GuiGraphics graphics, double mouseX, double mouseY) {
+        graphics.fill(panelX - 1, panelY - 1, panelX + panelW + 1, panelY + panelH + 1, 0xD0000000);
+        graphics.fill(panelX, panelY, panelX + panelW, panelY + panelH, 0xF0101010);
+        graphics.fill(panelX, panelY, panelX + panelW, panelY + PANEL_TITLE_HEIGHT, 0xFF2A2A2A);
 
         RenderSystem.enableBlend();
 
+        graphics.drawString(Minecraft.getInstance().font, "Emojis",
+                panelX + PANEL_PADDING + 1, panelY + 3, 0xFFD0D0D0);
+
+        int hovered = panelCellAt(mouseX, mouseY);
+
         for (int i = 0; i < EmojiData.EMOJIS.size(); i++) {
             EmojiData.EmojiEntry entry = EmojiData.EMOJIS.get(i);
-            int itemY = y + 2 + i * PICKER_ITEM_HEIGHT;
+            int cellX = panelX + PANEL_PADDING + (i % PANEL_COLUMNS) * CELL;
+            int cellY = panelY + PANEL_TITLE_HEIGHT + PANEL_PADDING + (i / PANEL_COLUMNS) * CELL;
 
             if (i == hovered) {
-                graphics.fill(x, itemY, x + PICKER_WIDTH, itemY + PICKER_ITEM_HEIGHT, 0xFF0055AA);
+                graphics.fill(cellX, cellY, cellX + CELL, cellY + CELL, 0xFF0055AA);
             }
 
-            graphics.blit(entry.texture(), x + 4, itemY + 2, 0, 0, 10, 10, 10, 10);
-            graphics.drawString(Minecraft.getInstance().font, ":" + entry.code() + ":", x + 18, itemY + 3, i == hovered ? 0xFFFFFF : 0xAAAAAA);
+            int iconOffset = (CELL - CELL_ICON) / 2;
+            drawEmoji(graphics, entry.texture(), cellX + iconOffset, cellY + iconOffset, CELL_ICON);
         }
 
         RenderSystem.disableBlend();
     }
 
-    /** Returns the picker row index under the given mouse position, or -1. */
-    private static int pickerCellAt(double mouseX, double mouseY) {
-        if (pickerH <= 0) return -1;
-        if (mouseX < pickerX || mouseX >= pickerX + PICKER_WIDTH) return -1;
+    /** Returns the emoji tab cell index under the given mouse position, or -1. */
+    private static int panelCellAt(double mouseX, double mouseY) {
+        if (!panelOpen) return -1;
+        if (!inRect(mouseX, mouseY, panelX, panelY, panelW, panelH)) return -1;
 
-        int row = (int) ((mouseY - pickerY - 2) / PICKER_ITEM_HEIGHT);
-        return (row >= 0 && row < EmojiData.EMOJIS.size()) ? row : -1;
+        int localX = (int) mouseX - panelX - PANEL_PADDING;
+        int localY = (int) mouseY - panelY - PANEL_TITLE_HEIGHT - PANEL_PADDING;
+
+        if (localX < 0 || localY < 0) return -1;
+
+        int column = localX / CELL;
+        int row = localY / CELL;
+
+        if (column >= PANEL_COLUMNS || column < 0) return -1;
+
+        int index = row * PANEL_COLUMNS + column;
+        return (index >= 0 && index < EmojiData.EMOJIS.size()) ? index : -1;
     }
 
-    /**
-     * Inserts the shortcode of the picked emoji at the cursor. If the text right
-     * before the cursor is an incomplete shortcode fragment (e.g. ":so"), that
-     * fragment is replaced; otherwise the shortcode is inserted as-is, so users
-     * can still type shortcodes manually.
-     */
+    private static boolean inRect(double mouseX, double mouseY, int x, int y, int width, int height) {
+        return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+    }
+
+    /** Draws a full emoji texture scaled into a size x size box. */
+    private static void drawEmoji(GuiGraphics graphics, ResourceLocation texture, int x, int y, int size) {
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        graphics.blit(texture, x, y, 0, 0, size, size, size, size);
+        RenderSystem.disableBlend();
+    }
+
     private static void insertShortcode(EditBox editBox, EmojiData.EmojiEntry entry) {
         String text = editBox.getValue();
         int cursor = Math.max(0, Math.min(editBox.getCursorPosition(), text.length()));
@@ -184,7 +275,7 @@ public class EmojiMod {
             }
         }
 
-        String insertion = ":" + entry.code() + ": ";
+        String insertion = ":" + entry.name() + ": ";
         editBox.setValue(before + insertion + after);
         editBox.setCursorPosition(before.length() + insertion.length());
 
@@ -206,7 +297,7 @@ public class EmojiMod {
         if (query.contains(" ")) return;
 
         for (EmojiData.EmojiEntry entry : EmojiData.EMOJIS) {
-            if (entry.code().toLowerCase().startsWith(query.toLowerCase())) {
+            if (entry.name().toLowerCase().startsWith(query.toLowerCase())) {
                 currentMatches.add(entry);
             }
         }
@@ -224,7 +315,7 @@ public class EmojiMod {
         if (lastColon != -1) {
             String before = text.substring(0, lastColon);
             String after = text.substring(cursor);
-            String replacement = ":" + selected.code() + ": ";
+            String replacement = ":" + selected.name() + ": ";
 
             editBox.setValue(before + replacement + after);
             editBox.setCursorPosition(before.length() + replacement.length());

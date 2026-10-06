@@ -9,7 +9,7 @@ import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = EmojiMod.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = EmojiData.MODID, value = Dist.CLIENT)
 public class EmojiCommands {
 
     @SubscribeEvent
@@ -24,10 +24,10 @@ public class EmojiCommands {
                 });
 
         for (EmojiData.EmojiEntry entry : EmojiData.EMOJIS) {
-            root.then(Commands.literal(entry.code())
+            root.then(Commands.literal(entry.name())
                     .executes(ctx -> {
                         ctx.getSource().sendSuccess(
-                                () -> Component.literal("§a[Emoji] §f:" + entry.code() + ": -> " + entry.character()),
+                                () -> Component.literal("§a[Emoji] §fRegistered shortcode: :" + entry.name() + ":"),
                                 false
                         );
                         return 1;
