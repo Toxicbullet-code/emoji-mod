@@ -209,6 +209,41 @@
       "ascent": 13,
       "height": 16,
       "chars": ["\uE01D"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/goat.png",
+      "ascent": 13,
+      "height": 16,
+      "chars": ["\uE01E"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/speaking_head.png",
+      "ascent": 13,
+      "height": 16,
+      "chars": ["\uE01F"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/fire.png",
+      "ascent": 13,
+      "height": 16,
+      "chars": ["\uE020"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/shush.png",
+      "ascent": 13,
+      "height": 16,
+      "chars": ["\uE021"]
+    },
+    {
+      "type": "bitmap",
+      "file": "emoji:font/ninja.png",
+      "ascent": 13,
+      "height": 16,
+      "chars": ["\uE021"]
     }
   ]
 }

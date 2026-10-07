@@ -47,6 +47,11 @@ public class EmojiData {
         list.add(new EmojiEntry("eggplant", new ResourceLocation(MODID, "textures/font/eggplant.png"), "\uE01B"));
         list.add(new EmojiEntry("water_splash", new ResourceLocation(MODID, "textures/font/water_splash.png"), "\uE01C"));
         list.add(new EmojiEntry("smiling_dog", new ResourceLocation(MODID, "textures/font/smiling_dog.png"), "\uE01D"));
+        list.add(new EmojiEntry("goat", new ResourceLocation(MODID, "textures/font/goat.png"), "\uE01E"));
+        list.add(new EmojiEntry("speaking_head", new ResourceLocation(MODID, "textures/font/speaking_head.png"), "\uE01F"));
+        list.add(new EmojiEntry("fire", new ResourceLocation(MODID, "textures/font/fire.png"), "\uE020"));
+        list.add(new EmojiEntry("shush", new ResourceLocation(MODID, "textures/font/shush.png"), "\uE021"));
+        list.add(new EmojiEntry("ninja", new ResourceLocation(MODID, "textures/font/ninja.png"), "\uE022"));
 
         EMOJIS = Collections.unmodifiableList(list);
     }
