@@ -1,6 +1,7 @@
 package com.emoji;
 
 import net.minecraft.resources.ResourceLocation;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +38,15 @@ public class EmojiData {
         list.add(new EmojiEntry("sob", new ResourceLocation(MODID, "textures/font/sob.png"), "\uE012"));
         list.add(new EmojiEntry("wave", new ResourceLocation(MODID, "textures/font/wave.png"), "\uE013"));
         list.add(new EmojiEntry("broken_heart", new ResourceLocation(MODID, "textures/font/broken_heart.png"), "\uE014"));
+        list.add(new EmojiEntry("idk", new ResourceLocation(MODID, "textures/font/idk.png"), "\uE015"));
+        list.add(new EmojiEntry("cold_face", new ResourceLocation(MODID, "textures/font/cold_face.png"), "\uE016"));
+        list.add(new EmojiEntry("anxious_face", new ResourceLocation(MODID, "textures/font/anxious_face.png"), "\uE017"));
+        list.add(new EmojiEntry("rolling_laugh", new ResourceLocation(MODID, "textures/font/rolling_laugh.png"), "\uE018"));
+        list.add(new EmojiEntry("eyes", new ResourceLocation(MODID, "textures/font/eyes.png"), "\uE019"));
+        list.add(new EmojiEntry("grining_cat", new ResourceLocation(MODID, "textures/font/grining_cat.png"), "\uE01A"));
+        list.add(new EmojiEntry("eggplant", new ResourceLocation(MODID, "textures/font/eggplant.png"), "\uE01B"));
+        list.add(new EmojiEntry("water_splash", new ResourceLocation(MODID, "textures/font/water_splash.png"), "\uE01C"));
+        list.add(new EmojiEntry("smiling_dog", new ResourceLocation(MODID, "textures/font/smiling_dog.png"), "\uE01D"));
 
         EMOJIS = Collections.unmodifiableList(list);
     }
