@@ -52,6 +52,7 @@ public class EmojiData {
         list.add(new EmojiEntry("fire", new ResourceLocation(MODID, "textures/font/fire.png"), "\uE020"));
         list.add(new EmojiEntry("shush", new ResourceLocation(MODID, "textures/font/shush.png"), "\uE021"));
         list.add(new EmojiEntry("ninja", new ResourceLocation(MODID, "textures/font/ninja.png"), "\uE022"));
+        list.add(new EmojiEntry("orangutan", new ResourceLocation(MODID, "textures/font/orangutan.png"), "\uE023"));
 
         EMOJIS = Collections.unmodifiableList(list);
     }
